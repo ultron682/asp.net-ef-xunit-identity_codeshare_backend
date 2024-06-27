@@ -1,3 +1,7 @@
+using CodeShareBackend.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+
 namespace CodeShareBackend
 {
     public class Program
@@ -19,6 +23,12 @@ namespace CodeShareBackend
             });
 
             builder.Services.AddControllers();
+
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+
             builder.Services.AddSignalR();
 
             var app = builder.Build();

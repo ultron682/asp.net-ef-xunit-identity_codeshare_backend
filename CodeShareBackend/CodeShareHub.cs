@@ -1,16 +1,40 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using System.Diagnostics;
 using System.Threading.Tasks;
+using CodeShareBackend.Data;
+using CodeShareBackend.Models;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
-namespace CodeShareBackend
+public class CodeShareHub : Hub
 {
-    public class CodeShareHub : Hub
+    private readonly ApplicationDbContext _context;
+
+    public CodeShareHub(ApplicationDbContext context)
     {
-        public async Task SendCode(string code)
-        {
-            Debug.WriteLine(code);
-            await Clients.Others.SendAsync("ReceiveCode", code);
-        }
+        _context = context;
     }
 
+    public async Task SendCode(string uniqueId, string code)
+    {
+        var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
+        if (snippet == null)
+        {
+            snippet = new CodeSnippet { UniqueId = uniqueId, Code = code };
+            _context.CodeSnippets.Add(snippet);
+        }
+        else
+        {
+            snippet.Code = code;
+            _context.CodeSnippets.Update(snippet);
+        }
+        await _context.SaveChangesAsync();
+
+        await Clients.Others.SendAsync("ReceiveCode", uniqueId, code);
+    }
+
+    public async Task<string> GetCode(string uniqueId)
+    {
+        var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
+        return snippet?.Code ?? string.Empty;
+    }
 }
