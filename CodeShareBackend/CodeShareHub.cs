@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace CodeShareBackend
@@ -7,6 +8,7 @@ namespace CodeShareBackend
     {
         public async Task SendCode(string code)
         {
+            Debug.WriteLine(code);
             await Clients.Others.SendAsync("ReceiveCode", code);
         }
     }
