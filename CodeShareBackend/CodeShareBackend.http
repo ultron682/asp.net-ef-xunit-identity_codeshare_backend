@@ -1,0 +1,6 @@
+@CodeShareBackend_HostAddress = http://localhost:5118
+
+GET {{CodeShareBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
