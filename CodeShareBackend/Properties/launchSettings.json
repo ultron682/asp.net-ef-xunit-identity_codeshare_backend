@@ -14,14 +14,14 @@
       "dotnetRunMessages": true,
       "launchBrowser": false,
       "launchUrl": "weatherforecast",
-      "applicationUrl": "http://localhost:5555",
+      "applicationUrl": "http://192.168.10.17:5555",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "IIS Express": {
       "commandName": "IISExpress",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
