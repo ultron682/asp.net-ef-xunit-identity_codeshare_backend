@@ -31,7 +31,8 @@ namespace CodeShareBackend
             builder.Services.AddControllers();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+            );
 
             builder.Services.AddSignalR();
 
@@ -65,9 +66,9 @@ namespace CodeShareBackend
                     c.RoutePrefix = string.Empty; // Aby Swagger UI był dostępny pod URL root (localhost:<port>/)
                 });
             }
-            app.UseRouting();
-            app.UseAuthentication();
-            app.UseAuthorization();
+            //app.UseRouting();
+            //app.UseAuthentication();
+            //app.UseAuthorization();
 
             app.UseCors("AllowAllOrigins");
             app.MapControllers();
