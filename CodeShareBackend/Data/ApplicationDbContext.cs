@@ -14,11 +14,11 @@ namespace CodeShareBackend.Data
 
         public DbSet<CodeSnippet> CodeSnippets { get; set; }
     }
-}
 
-class IdentityDbContext : IdentityDbContext<IdentityUser>
-{
-    public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options)
+    class IdentityAppDbContext : IdentityDbContext<IdentityUser>
     {
+        public IdentityAppDbContext(DbContextOptions<IdentityAppDbContext> options) : base(options)
+        {
+        }
     }
 }
