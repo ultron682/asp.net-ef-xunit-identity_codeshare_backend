@@ -19,14 +19,9 @@ builder.Services.AddCors(options =>
         });
 });
 
-//builder.Services.AddIdentityCore<IdentityUser>()
-//.AddEntityFrameworkStores<ApplicationDbContext>()
-//.AddDefaultTokenProviders();
 
 builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
 builder.Services.AddAuthorizationBuilder();
-
-builder.Services.AddControllers();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -39,6 +34,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddIdentityCore<IdentityUser>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddApiEndpoints();
+
+builder.Services.AddControllers();
 
 builder.Services.AddSignalR();
 
@@ -53,7 +50,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-    c.RoutePrefix = string.Empty; // Aby Swagger UI był dostępny pod URL root (localhost:<port>/)
+    c.RoutePrefix = "swagger"; // (localhost:<port>/swagger)
 });
 
 app.UseRouting();
@@ -61,7 +58,9 @@ app.UseRouting();
 //app.UseAuthorization();
 
 app.UseCors("AllowAllOrigins");
+
 app.MapControllers();
+
 app.MapHub<CodeShareHub>("/codesharehub");
 
 app.MapIdentityApi<IdentityUser>();
