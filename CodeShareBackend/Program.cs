@@ -1,79 +1,73 @@
 ﻿using CodeShareBackend.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
 
-namespace CodeShareBackend
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
 {
-    public class Program
-    {
-        public static void Main(string[] args)
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
         {
-            var builder = WebApplication.CreateBuilder(args);
+            builder.AllowAnyOrigin();
+            builder.AllowAnyMethod();
+            builder.AllowAnyHeader();
+        });
+});
 
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAllOrigins",
-                    builder =>
-                    {
-                        builder.AllowAnyOrigin();
-                        builder.AllowAnyMethod();
-                        builder.AllowAnyHeader();
-                    });
-            });
+//builder.Services.AddIdentityCore<IdentityUser>()
+//.AddEntityFrameworkStores<ApplicationDbContext>()
+//.AddDefaultTokenProviders();
 
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
+builder.Services.AddAuthorizationBuilder();
 
-            builder.Services.AddControllers();
+builder.Services.AddControllers();
 
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-            );
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
-            builder.Services.AddSignalR();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseInMemoryDatabase("AppDb")
+);
 
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "My API",
-                    Version = "v1",
-                    Description = "Opis Twojego API",
-                    Contact = new OpenApiContact
-                    {
-                        Name = "Twoje Imię",
-                        Email = "twój.email@example.com",
-                        Url = new Uri("https://twój-web-site.com")
-                    }
-                });
-            });
+builder.Services.AddIdentityCore<IdentityUser>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddApiEndpoints();
 
+builder.Services.AddSignalR();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-            var app = builder.Build();
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                    c.RoutePrefix = string.Empty; // Aby Swagger UI był dostępny pod URL root (localhost:<port>/)
-                });
-            }
-            //app.UseRouting();
-            //app.UseAuthentication();
-            //app.UseAuthorization();
+var app = builder.Build();
 
-            app.UseCors("AllowAllOrigins");
-            app.MapControllers();
-            app.MapHub<CodeShareHub>("/codesharehub");
-            app.Run();
-        }
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    c.RoutePrefix = string.Empty; // Aby Swagger UI był dostępny pod URL root (localhost:<port>/)
+});
+
+app.UseRouting();
+//app.UseAuthentication();
+//app.UseAuthorization();
+
+app.UseCors("AllowAllOrigins");
+app.MapControllers();
+app.MapHub<CodeShareHub>("/codesharehub");
+
+app.MapIdentityApi<IdentityUser>();
+app.Run();
+
+class AppDbContext : IdentityDbContext<IdentityUser>
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    {
     }
 }
