@@ -16,9 +16,9 @@ namespace CodeShareBackend.Data
     }
 }
 
-class AppDbContext : IdentityDbContext<IdentityUser>
+class IdentityDbContext : IdentityDbContext<IdentityUser>
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options)
     {
     }
 }
