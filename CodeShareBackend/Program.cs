@@ -45,6 +45,8 @@ builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -65,9 +67,3 @@ app.MapHub<CodeShareHub>("/codesharehub");
 app.MapIdentityApi<IdentityUser>();
 app.Run();
 
-class AppDbContext : IdentityDbContext<IdentityUser>
-{
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-}
