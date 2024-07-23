@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace CodeShareBackend.Migrations.IdentityDb
+namespace CodeShareBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class secondattemp : Migration
+    public partial class relacjausercodesnippet : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -156,6 +156,33 @@ namespace CodeShareBackend.Migrations.IdentityDb
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "CodeSnippets",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UniqueId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    OwnerId1 = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    OwnerId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CodeSnippets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CodeSnippets_AspNetUsers_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_CodeSnippets_AspNetUsers_OwnerId1",
+                        column: x => x.OwnerId1,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -194,6 +221,16 @@ namespace CodeShareBackend.Migrations.IdentityDb
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CodeSnippets_OwnerId",
+                table: "CodeSnippets",
+                column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CodeSnippets_OwnerId1",
+                table: "CodeSnippets",
+                column: "OwnerId1");
         }
 
         /// <inheritdoc />
@@ -213,6 +250,9 @@ namespace CodeShareBackend.Migrations.IdentityDb
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "CodeSnippets");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

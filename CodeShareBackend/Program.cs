@@ -1,4 +1,6 @@
-﻿using CodeShareBackend.Data;
+﻿using CodeShareBackend.Controllers;
+using CodeShareBackend.Data;
+using CodeShareBackend.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -22,16 +24,16 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+builder.Services
+    .AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("TrelloDBConnection"))
+    );
 
-builder.Services.AddDbContext<IdentityAppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
 
-builder.Services.AddIdentityApiEndpoints<IdentityUser>()
-    .AddEntityFrameworkStores<IdentityAppDbContext>();
+builder.Services.AddIdentityApiEndpoints<User>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+//builder.Services.AddSingleton<CodeSnippetController>();
 
 builder.Services.AddAuthorization();
 
@@ -59,7 +61,7 @@ app.MapControllers();
 
 app.MapHub<CodeShareHub>("/codesharehub");
 
-app.MapIdentityApi<IdentityUser>();
+app.MapIdentityApi<User>();
 
 app.Run();
 

@@ -5,20 +5,23 @@ using Microsoft.AspNetCore.Identity;
 
 namespace CodeShareBackend.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-
         public DbSet<CodeSnippet> CodeSnippets { get; set; }
-    }
 
-    class IdentityAppDbContext : IdentityDbContext<IdentityUser>
-    {
-        public IdentityAppDbContext(DbContextOptions<IdentityAppDbContext> options) : base(options)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<CodeSnippet>(eb =>
+            {
+                eb.HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey(c => c.OwnerId);
+            });
         }
     }
 }
