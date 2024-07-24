@@ -24,18 +24,33 @@ namespace CodeShareBackend.Controllers
             _userManager = userManager;
         }
 
-        //[HttpPost()]
-        //public async Task<IActionResult> SetOwner(string uniqueId, string ownerId)
-        //{
-        //    var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
-        //    if (snippet == null)
-        //    {
-        //        return NotFound("Snippet not found");
-        //    }
-        //    snippet.UserId = ownerId;
-        //    await _context.SaveChangesAsync();
-        //    return Ok("Owner set");
-        //}
+        [HttpDelete()]
+        public async Task<IActionResult> DeleteSnipet(int Id)
+        {
+            User? user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized("User not found in token");
+            }
+
+            var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.Id == Id);
+
+            if (snippet == null)
+            {
+                return NotFound("Snippet not found");
+            }
+
+            if (snippet.UserId != user.Id)
+            {
+                return Unauthorized("Snippet does not belong to user");
+            }
+
+            _context.CodeSnippets.Remove(snippet);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetAccountInfo()
