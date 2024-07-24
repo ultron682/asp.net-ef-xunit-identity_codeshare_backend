@@ -65,14 +65,21 @@ namespace CodeShareBackend.Controllers
 
             var accountInfo = await _context.Users
                 .Where(u => u.Id == user.Id)
-                .Include(u => u.CodeSnippets).Select(u =>
+                .Include(u => u.CodeSnippets)
+                .Select(u =>
                 new
                 {
                     u.Id,
                     u.Email,
                     u.UserName,
-                    CodeSnippets = u.CodeSnippets.Select(cs => cs.UniqueId).ToArray()
-                }).FirstOrDefaultAsync();
+                    // code snippets with max 20 chars
+                    CodeSnippets = u.CodeSnippets.Select(cs => new
+                    {
+                        cs.UniqueId,
+                        Code = cs.Code == null ? string.Empty : cs.Code.Length > 20 ? cs.Code.Substring(0, 20) : cs.Code
+                    }).ToArray()
+                })
+                .FirstOrDefaultAsync();
 
             Console.WriteLine(accountInfo);
             return Ok(accountInfo);

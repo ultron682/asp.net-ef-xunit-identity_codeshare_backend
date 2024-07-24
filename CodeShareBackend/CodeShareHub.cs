@@ -23,7 +23,7 @@ public class CodeShareHub : Hub
         if (snippet == null)
         {
             //Console.WriteLine("userId: " + userId);
-            snippet = new CodeSnippet { UniqueId = uniqueId, Code = code, UserId = userId };
+            snippet = new CodeSnippet { UniqueId = uniqueId, Code = code, UserId = userId == string.Empty ? null : userId };
             _context.CodeSnippets.Add(snippet);
         }
         else
