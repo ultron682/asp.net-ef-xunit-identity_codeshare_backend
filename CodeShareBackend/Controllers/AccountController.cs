@@ -24,8 +24,8 @@ namespace CodeShareBackend.Controllers
             _userManager = userManager;
         }
 
-        [HttpDelete()]
-        public async Task<IActionResult> DeleteSnipet(int Id)
+        [HttpDelete("{UniqueId}")]
+        public async Task<IActionResult> DeleteSnipet(string UniqueId)
         {
             User? user = await _userManager.GetUserAsync(User);
 
@@ -34,7 +34,7 @@ namespace CodeShareBackend.Controllers
                 return Unauthorized("User not found in token");
             }
 
-            var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.Id == Id);
+            var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == UniqueId);
 
             if (snippet == null)
             {
