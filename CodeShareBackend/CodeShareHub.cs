@@ -22,7 +22,7 @@ public class CodeShareHub : Hub
         var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
         if (snippet == null)
         {
-            Console.WriteLine("userId: " + userId);
+            //Console.WriteLine("userId: " + userId);
             snippet = new CodeSnippet { UniqueId = uniqueId, Code = code, UserId = userId };
             _context.CodeSnippets.Add(snippet);
         }

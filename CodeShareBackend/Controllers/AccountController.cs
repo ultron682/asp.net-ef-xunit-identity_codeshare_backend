@@ -24,24 +24,24 @@ namespace CodeShareBackend.Controllers
             _userManager = userManager;
         }
 
-        [HttpPost()]
-        public async Task<IActionResult> SetOwner(string uniqueId, string ownerId)
-        {
-            var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
-            if (snippet == null)
-            {
-                return NotFound("Snippet not found");
-            }
-            snippet.UserId = ownerId;
-            await _context.SaveChangesAsync();
-            return Ok("Owner set");
-        }
+        //[HttpPost()]
+        //public async Task<IActionResult> SetOwner(string uniqueId, string ownerId)
+        //{
+        //    var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
+        //    if (snippet == null)
+        //    {
+        //        return NotFound("Snippet not found");
+        //    }
+        //    snippet.UserId = ownerId;
+        //    await _context.SaveChangesAsync();
+        //    return Ok("Owner set");
+        //}
 
         [HttpGet]
         public async Task<IActionResult> GetAccountInfo()
         {
             User? user = await _userManager.GetUserAsync(User);
-            Console.WriteLine(user?.Email + user?.Id);
+            //Console.WriteLine(user?.Email + user?.Id);
 
             if (user == null)
             {
@@ -63,10 +63,17 @@ namespace CodeShareBackend.Controllers
             return Ok(accountInfo);
         }
 
-        [HttpPost("test")]
-        public async Task<IActionResult> GetSnippets(string ownerId)
+        [HttpGet("snippet")]
+        public async Task<IActionResult> GetSnippets()
         {
-            var snippets = await _context.CodeSnippets.Where(s => s.UserId == ownerId).ToListAsync();
+            User? user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized("User not found in token");
+            }
+
+            var snippets = await _context.CodeSnippets.Where(s => s.UserId == user.Id).ToListAsync();
             return Ok(snippets);
         }
 
