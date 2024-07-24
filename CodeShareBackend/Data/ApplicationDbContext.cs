@@ -16,12 +16,11 @@ namespace CodeShareBackend.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<CodeSnippet>(eb =>
-            {
-                eb.HasOne<User>()
-                    .WithMany()
-                    .HasForeignKey(c => c.OwnerId);
-            });
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.CodeSnippets)
+                .WithOne(c => c.User)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade); ;
         }
     }
 }
