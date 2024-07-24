@@ -1,20 +1,27 @@
 ﻿using CodeShareBackend.Data;
+using CodeShareBackend.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace CodeShareBackend.Controllers
 {
     [ApiController]
     [Route("account")]
-    //[Authorize]
+    [Authorize]
     public class AccountController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
 
-        public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context, SignInManager<User> signInManager, UserManager<User> userManager)
         {
             _context = context;
+            _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         [HttpPost()]
@@ -31,11 +38,27 @@ namespace CodeShareBackend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAccountInfo(string ownerId)
+        public async Task<IActionResult> GetAccountInfo()
         {
+            User? user = await _userManager.GetUserAsync(User);
+            Console.WriteLine(user?.Email + user?.Id);
+
+            if (user == null)
+            {
+                return Unauthorized("User not found in token");
+            }
+
             var accountInfo = await _context.Users
-                .Where(u => u.Id == ownerId)
-                .Include(u => u.CodeSnippets).Select(u => new { u.Email, u.UserName, CodeSnippets = u.CodeSnippets.Select(cs => cs.UniqueId).ToArray() }).FirstOrDefaultAsync();
+                .Where(u => u.Id == user.Id)
+                .Include(u => u.CodeSnippets).Select(u =>
+                new
+                {
+                    u.Id,
+                    u.Email,
+                    u.UserName,
+                    CodeSnippets = u.CodeSnippets.Select(cs => cs.UniqueId).ToArray()
+                }).FirstOrDefaultAsync();
+
             Console.WriteLine(accountInfo);
             return Ok(accountInfo);
         }
