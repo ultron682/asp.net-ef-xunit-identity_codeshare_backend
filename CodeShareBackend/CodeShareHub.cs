@@ -44,12 +44,6 @@ public class CodeShareHub : Hub
         }
     }
 
-    //public async Task<string> GetCode(string uniqueId)
-    //{
-    //    var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
-    //    return snippet?.Code ?? string.Empty;
-    //}
-
     //public override async Task OnDisconnectedAsync(Exception exception)
     //{
     //    if (connectionsNgroup.ContainsKey(Context.ConnectionId))
@@ -58,14 +52,6 @@ public class CodeShareHub : Hub
     //        connectionsNgroup.Remove(Context.ConnectionId);
     //    }
     //    await base.OnDisconnectedAsync(exception);
-    //}
-
-    //public async Task BroadcastText(string text)
-    //{
-    //    if (connectionsNgroup.ContainsKey(Context.ConnectionId))
-    //    {
-    //        await Clients.OthersInGroup(connectionsNgroup[Context.ConnectionId]).SendAsync("ReceiveText", text);
-    //    }
     //}
 
     public async Task<string> JoinGroup(string uniqueId)
