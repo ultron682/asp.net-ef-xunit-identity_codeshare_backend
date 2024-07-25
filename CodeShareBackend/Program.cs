@@ -1,17 +1,18 @@
-﻿using CodeShareBackend.Controllers;
-using CodeShareBackend.Data;
+﻿using CodeShareBackend.Data;
 using CodeShareBackend.Models;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins",
+    options.AddDefaultPolicy(
         builder =>
         {
             builder.AllowAnyOrigin();
@@ -32,12 +33,20 @@ builder.Services
 builder.Services.AddIdentityApiEndpoints<User>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options => {
+    options.BearerTokenExpiration = TimeSpan.FromSeconds(60);
+});
+
+builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers().AddJsonOptions(x =>
-   x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve); ;
+   x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(o =>
+{
+    o.EnableDetailedErrors = true;
+});
 
 
 
@@ -49,15 +58,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors();
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseCors("AllowAllOrigins");
-
 app.MapControllers();
 
-app.MapHub<CodeShareHub>("/codesharehub");
+app.MapHub<CodeShareHub>("/codesharehub").AllowAnonymous();
 
 app.MapIdentityApi<User>();
 

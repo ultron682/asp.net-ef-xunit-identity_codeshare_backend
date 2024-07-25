@@ -5,11 +5,15 @@ using CodeShareBackend.Models;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using static System.Net.Mime.MediaTypeNames;
 
 public class CodeShareHub : Hub
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<User> _userManager;
+    private static Dictionary<string, string> connectionsNgroup = new Dictionary<string, string>();
+
+
 
     public CodeShareHub(ApplicationDbContext context, UserManager<User> userManager)
     {
@@ -17,7 +21,7 @@ public class CodeShareHub : Hub
         _userManager = userManager;
     }
 
-    public async Task SendCode(string uniqueId, string code, string userId)
+    public async Task BroadcastText(string uniqueId, string code, string userId)
     {
         var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
         if (snippet == null)
@@ -33,11 +37,49 @@ public class CodeShareHub : Hub
         }
         await _context.SaveChangesAsync();
 
-        await Clients.Others.SendAsync("ReceiveCode", uniqueId, code);
+        if (connectionsNgroup.ContainsKey(Context.ConnectionId))
+        {
+            Console.WriteLine("wyslano: " + code);
+            await Clients.OthersInGroup(connectionsNgroup[Context.ConnectionId]).SendAsync("ReceivedCode", uniqueId, code);
+        }
     }
 
-    public async Task<string> GetCode(string uniqueId)
+    //public async Task<string> GetCode(string uniqueId)
+    //{
+    //    var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
+    //    return snippet?.Code ?? string.Empty;
+    //}
+
+    //public override async Task OnDisconnectedAsync(Exception exception)
+    //{
+    //    if (connectionsNgroup.ContainsKey(Context.ConnectionId))
+    //    {
+    //        await Groups.RemoveFromGroupAsync(Context.ConnectionId, connectionsNgroup[Context.ConnectionId]);
+    //        connectionsNgroup.Remove(Context.ConnectionId);
+    //    }
+    //    await base.OnDisconnectedAsync(exception);
+    //}
+
+    //public async Task BroadcastText(string text)
+    //{
+    //    if (connectionsNgroup.ContainsKey(Context.ConnectionId))
+    //    {
+    //        await Clients.OthersInGroup(connectionsNgroup[Context.ConnectionId]).SendAsync("ReceiveText", text);
+    //    }
+    //}
+
+    public async Task<string> JoinGroup(string uniqueId)
     {
+        Console.WriteLine("Joining group: " + uniqueId);
+
+        if (connectionsNgroup.ContainsKey(Context.ConnectionId))
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, connectionsNgroup[Context.ConnectionId]);
+            connectionsNgroup.Remove(Context.ConnectionId);
+        }
+        connectionsNgroup.Add(Context.ConnectionId, uniqueId);
+        await Groups.AddToGroupAsync(Context.ConnectionId, uniqueId);
+
         var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
         return snippet?.Code ?? string.Empty;
     }
