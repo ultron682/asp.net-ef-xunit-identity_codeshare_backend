@@ -39,25 +39,31 @@ public class CodeShareHub : Hub
 
         if (connectionsNgroup.ContainsKey(Context.ConnectionId))
         {
-            Console.WriteLine("wyslano: " + code);
+            //Console.WriteLine("wyslano: " + code);
             await Clients.OthersInGroup(connectionsNgroup[Context.ConnectionId]).SendAsync("ReceivedCode", uniqueId, code);
         }
     }
 
-    //public override async Task OnDisconnectedAsync(Exception exception)
-    //{
-    //    if (connectionsNgroup.ContainsKey(Context.ConnectionId))
-    //    {
-    //        await Groups.RemoveFromGroupAsync(Context.ConnectionId, connectionsNgroup[Context.ConnectionId]);
-    //        connectionsNgroup.Remove(Context.ConnectionId);
-    //    }
-    //    await base.OnDisconnectedAsync(exception);
-    //}
+    public override async Task OnDisconnectedAsync(Exception exception)
+    {
+        if (connectionsNgroup.ContainsKey(Context.ConnectionId))
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, connectionsNgroup[Context.ConnectionId]);
+            connectionsNgroup.Remove(Context.ConnectionId);
+        }
+        await base.OnDisconnectedAsync(exception);
+    }
+
+    void printConnectionsNgroup()
+    {
+        foreach (var item in connectionsNgroup)
+        {
+            Console.WriteLine(item.Key + " " + item.Value);
+        }
+    }
 
     public async Task<string> JoinGroup(string uniqueId)
     {
-        Console.WriteLine("Joining group: " + uniqueId);
-
         if (connectionsNgroup.ContainsKey(Context.ConnectionId))
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, connectionsNgroup[Context.ConnectionId]);
@@ -65,6 +71,8 @@ public class CodeShareHub : Hub
         }
         connectionsNgroup.Add(Context.ConnectionId, uniqueId);
         await Groups.AddToGroupAsync(Context.ConnectionId, uniqueId);
+
+        printConnectionsNgroup();
 
         var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
         return snippet?.Code ?? string.Empty;

@@ -26,15 +26,19 @@ builder.Services.AddSwaggerGen();
 
 builder.Services
     .AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("TrelloDBConnection"))
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("TrelloDBConnection"));
+        options.EnableSensitiveDataLogging(false);
+    }
 );
 
 
 builder.Services.AddIdentityApiEndpoints<User>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options => {
-    options.BearerTokenExpiration = TimeSpan.FromSeconds(60);
+builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>
+{
+    options.BearerTokenExpiration = TimeSpan.FromSeconds(604800); // 7 dni
 });
 
 builder.Services.AddAuthentication();

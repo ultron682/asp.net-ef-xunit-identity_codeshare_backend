@@ -8,6 +8,7 @@
         public DateTime? ExpiryDate { get; set; }
         public string? UserId { get; set; }
         public User? User { get; set; }
+        public ProgLanguage? SelectedLang { get; set; }
 
     }
 }
