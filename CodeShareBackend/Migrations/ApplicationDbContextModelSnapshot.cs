@@ -34,7 +34,14 @@ namespace CodeShareBackend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValue(new DateTime(2024, 7, 29, 14, 18, 37, 312, DateTimeKind.Local).AddTicks(6399));
+
+                    b.Property<int>("SelectedLangId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.Property<string>("UniqueId")
                         .IsRequired()
@@ -45,9 +52,70 @@ namespace CodeShareBackend.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SelectedLangId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("CodeSnippets");
+                });
+
+            modelBuilder.Entity("CodeShareBackend.Models.ProgLanguage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProgLanguages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "javascript"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "xml"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "css"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "go"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "php"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "python"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "sql"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "swift"
+                        });
                 });
 
             modelBuilder.Entity("CodeShareBackend.Models.User", b =>
@@ -250,9 +318,18 @@ namespace CodeShareBackend.Migrations
 
             modelBuilder.Entity("CodeShareBackend.Models.CodeSnippet", b =>
                 {
+                    b.HasOne("CodeShareBackend.Models.ProgLanguage", "SelectedLang")
+                        .WithMany()
+                        .HasForeignKey("SelectedLangId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("CodeShareBackend.Models.User", "User")
                         .WithMany("CodeSnippets")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("SelectedLang");
 
                     b.Navigation("User");
                 });

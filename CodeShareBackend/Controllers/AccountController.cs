@@ -76,7 +76,7 @@ namespace CodeShareBackend.Controllers
                     CodeSnippets = u.CodeSnippets.Select(cs => new
                     {
                         cs.UniqueId,
-                        Code = cs.Code == null ? string.Empty : cs.Code.Length > 20 ? cs.Code.Substring(0, 20) : cs.Code
+                        Code = cs.Code == null ? string.Empty : (cs.Code.Length > 20 ? cs.Code.Substring(0, 20) : cs.Code)
                     }).ToArray()
                 })
                 .FirstOrDefaultAsync();

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CodeShareBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240723223500_new-relation")]
-    partial class newrelation
+    [Migration("20240726110323_fresh")]
+    partial class fresh
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,18 +39,84 @@ namespace CodeShareBackend.Migrations
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("OwnerId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("SelectedLangId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.Property<string>("UniqueId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("SelectedLangId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("CodeSnippets");
+                });
+
+            modelBuilder.Entity("CodeShareBackend.Models.ProgLanguage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProgLanguages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "javascript"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "xml"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "css"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "go"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "php"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "python"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "sql"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "swift"
+                        });
                 });
 
             modelBuilder.Entity("CodeShareBackend.Models.User", b =>
@@ -253,11 +319,20 @@ namespace CodeShareBackend.Migrations
 
             modelBuilder.Entity("CodeShareBackend.Models.CodeSnippet", b =>
                 {
-                    b.HasOne("CodeShareBackend.Models.User", "Owner")
-                        .WithMany("CodeSnippets")
-                        .HasForeignKey("OwnerId");
+                    b.HasOne("CodeShareBackend.Models.ProgLanguage", "SelectedLang")
+                        .WithMany()
+                        .HasForeignKey("SelectedLangId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.HasOne("CodeShareBackend.Models.User", "User")
+                        .WithMany("CodeSnippets")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("SelectedLang");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

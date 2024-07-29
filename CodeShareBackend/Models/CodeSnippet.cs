@@ -7,8 +7,9 @@
         public string UniqueId { get; set; } = string.Empty;
         public DateTime? ExpiryDate { get; set; }
         public string? UserId { get; set; }
+        public int SelectedLangId { get; set; }
+
         public User? User { get; set; }
         public ProgLanguage? SelectedLang { get; set; }
-
     }
 }

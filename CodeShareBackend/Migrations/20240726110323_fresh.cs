@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace CodeShareBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class relacjausercodesnippet : Migration
+    public partial class fresh : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,6 +50,19 @@ namespace CodeShareBackend.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProgLanguages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProgLanguages", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -162,25 +177,42 @@ namespace CodeShareBackend.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UniqueId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    OwnerId1 = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    OwnerId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    SelectedLangId = table.Column<int>(type: "int", nullable: false, defaultValue: 1)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CodeSnippets", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CodeSnippets_AspNetUsers_OwnerId",
-                        column: x => x.OwnerId,
+                        name: "FK_CodeSnippets_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CodeSnippets_AspNetUsers_OwnerId1",
-                        column: x => x.OwnerId1,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        name: "FK_CodeSnippets_ProgLanguages_SelectedLangId",
+                        column: x => x.SelectedLangId,
+                        principalTable: "ProgLanguages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "ProgLanguages",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 1, "javascript" },
+                    { 2, "xml" },
+                    { 3, "css" },
+                    { 4, "go" },
+                    { 5, "php" },
+                    { 6, "python" },
+                    { 7, "sql" },
+                    { 8, "swift" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -223,14 +255,14 @@ namespace CodeShareBackend.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CodeSnippets_OwnerId",
+                name: "IX_CodeSnippets_SelectedLangId",
                 table: "CodeSnippets",
-                column: "OwnerId");
+                column: "SelectedLangId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CodeSnippets_OwnerId1",
+                name: "IX_CodeSnippets_UserId",
                 table: "CodeSnippets",
-                column: "OwnerId1");
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -259,6 +291,9 @@ namespace CodeShareBackend.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "ProgLanguages");
         }
     }
 }
