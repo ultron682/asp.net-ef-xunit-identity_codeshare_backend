@@ -8,6 +8,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+
+public class TextUpdate
+{
+    public string Changes { get; set; }
+    public int Version { get; set; }
+}
 
 public class CodeShareHub : Hub
 {
@@ -37,7 +44,7 @@ public class CodeShareHub : Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, uniqueId);
 
         var snippet = await _context.CodeSnippets.Include(l => l.SelectedLang).SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
-        Console.WriteLine(snippet?.Code);
+        //Console.WriteLine(snippet?.Code);
         return snippet;
     }
 
@@ -139,7 +146,7 @@ public class CodeShareHub : Hub
 
             snippet.Code = string.Join(Environment.NewLine, lines);
 
-            Console.WriteLine("\nChanged to: \n" + snippet.Code);
+            //Console.WriteLine("\nChanged to: \n" + snippet.Code);
 
             _context.CodeSnippets.Update(snippet);
         }
@@ -152,9 +159,33 @@ public class CodeShareHub : Hub
         }
     }
 
-    public async Task SendCodeUpdate(object metadata)
+    private static ConcurrentDictionary<string, string> Documents = new ConcurrentDictionary<string, string>();
+
+    public async Task SendUpdate(string docId, string clientId, string changes)
     {
-        await Clients.Others.SendAsync("ReceiveCodeUpdate", metadata);
+        if (!Documents.ContainsKey(docId))
+        {
+            Documents[docId] = "Start document";
+        }
+
+        // Apply changes to the document
+        var currentDocument = Documents[docId];
+        // Here, you would apply the changes to the document.
+        // This is a simplified example, and you should use a proper diff/patch library.
+        Documents[docId] = changes;
+
+        // Notify all clients except the sender
+        await Clients.Others.SendAsync("ReceiveUpdate", docId, clientId, changes);
+    }
+
+    public async Task<string> GetDocument(string docId)
+    {
+        if (Documents.ContainsKey(docId))
+        {
+            return Documents[docId];
+        }
+
+        return "Start document";
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
