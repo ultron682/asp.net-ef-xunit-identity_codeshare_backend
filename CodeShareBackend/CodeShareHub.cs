@@ -13,7 +13,6 @@ public class CodeShareHub : Hub
     private static Dictionary<string, string> _connectionsNgroup = [];
 
     private static Dictionary<string, Text> CurrentOpenDocuments = [];
-    private static Dictionary<string, List<ChangeSet>> CurrentDocumentChanges = [];
 
     public CodeShareHub(ApplicationDbContext context, UserManager<User> userManager)
     {
@@ -21,7 +20,7 @@ public class CodeShareHub : Hub
         _userManager = userManager;
     }
 
-    public async Task JoinDocument(string uniqueId)
+    public async Task JoinToDocument(string uniqueId)
     {
         Console.WriteLine("JoinDocument: " + uniqueId + " : " + Context.ConnectionId);
 
@@ -40,7 +39,6 @@ public class CodeShareHub : Hub
         if (!CurrentOpenDocuments.ContainsKey(uniqueId))
         {
             CurrentOpenDocuments[uniqueId] = new Text(snippet == null ? string.Empty : snippet.Code!);
-            CurrentDocumentChanges[uniqueId] = [];
         }
 
         await Clients.Caller.SendAsync("ReceiveDocument", snippet);
@@ -63,7 +61,6 @@ public class CodeShareHub : Hub
             var document = CurrentOpenDocuments[uniqueId].ApplyChangeSet(changeSet);
 
             CurrentOpenDocuments[uniqueId] = document;
-            CurrentDocumentChanges[uniqueId].Add(changeSet);
 
             if (_connectionsNgroup.ContainsKey(Context.ConnectionId))
                 await Clients.OthersInGroup(uniqueId).SendAsync("ReceiveUpdate", changeSetJson);
