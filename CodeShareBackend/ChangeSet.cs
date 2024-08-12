@@ -18,27 +18,15 @@ public class ChangeSet
         return JsonConvert.DeserializeObject<ChangeSet>(json);
     }
 
-    public string ToJSON()
+    public string Apply(string document)
     {
-        return JsonConvert.SerializeObject(this);
-    }
+        if (Start < 0 || Start > document.Length)
+        {
+            throw new ArgumentOutOfRangeException("Invalid ChangeSet range");
+        }
 
-   public string Apply(string document)
-{
-    if (Start < 0 || Start > document.Length)
-    {
-        throw new ArgumentOutOfRangeException("Invalid ChangeSet range");
-    }
+        Console.WriteLine($"Applying ChangeSet: Start={Start}, Length={Length}, Text='{Text}', DocumentLength={document.Length}");
 
-    Console.WriteLine($"Applying ChangeSet: Start={Start}, Length={Length}, Text='{Text}', DocumentLength={document.Length}");
-
-    return document.Substring(0, Start) + Text + document.Substring(Start + Length);
-}
-
-    public static ChangeSet Compose(ChangeSet first, ChangeSet second)
-    {
-        // Łączenie dwóch ChangeSet
-        string combinedText = first.Apply(second.Apply(""));
-        return new ChangeSet(Math.Min(first.Start, second.Start), combinedText.Length, combinedText);
+        return document.Substring(0, Start) + Text + document.Substring(Start + Length);
     }
 }

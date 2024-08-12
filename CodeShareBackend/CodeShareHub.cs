@@ -14,6 +14,12 @@ public class CodeShareHub : Hub
     private static Dictionary<string, Text> Documents = new Dictionary<string, Text>();
     private static Dictionary<string, List<ChangeSet>> DocumentChanges = new Dictionary<string, List<ChangeSet>>();
 
+    public CodeShareHub(ApplicationDbContext context, UserManager<User> userManager)
+    {
+        _context = context;
+        _userManager = userManager;
+    }
+
     public async Task JoinDocument(string uniqueId)
     {
         if (!Documents.ContainsKey(uniqueId))
@@ -46,13 +52,6 @@ public class CodeShareHub : Hub
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, uniqueId);
     }
 
-
-
-    public CodeShareHub(ApplicationDbContext context, UserManager<User> userManager)
-    {
-        _context = context;
-        _userManager = userManager;
-    }
 
     //public async Task<CodeSnippet> JoinGroup(string uniqueId)
     //{
