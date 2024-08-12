@@ -13,7 +13,7 @@ public class ChangeSet
         Text = text;
     }
 
-    public static ChangeSet FromJSON(string json)
+    public static ChangeSet? FromJSON(string json)
     {
         return JsonConvert.DeserializeObject<ChangeSet>(json);
     }

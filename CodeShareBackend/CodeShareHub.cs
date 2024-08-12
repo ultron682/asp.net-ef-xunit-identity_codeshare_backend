@@ -34,12 +34,19 @@ public class CodeShareHub : Hub
     public async Task PushUpdate(string uniqueId, string changeSetJson)
     {
         var changeSet = ChangeSet.FromJSON(changeSetJson);
-        var document = Documents[uniqueId].ApplyChangeSet(changeSet);
+        if (changeSet != null)
+        {
+            var document = Documents[uniqueId].ApplyChangeSet(changeSet);
 
-        Documents[uniqueId] = document;
-        DocumentChanges[uniqueId].Add(changeSet);
+            Documents[uniqueId] = document;
+            DocumentChanges[uniqueId].Add(changeSet);
 
-        await Clients.OthersInGroup(uniqueId).SendAsync("ReceiveUpdate", changeSetJson);
+            await Clients.OthersInGroup(uniqueId).SendAsync("ReceiveUpdate", changeSetJson);
+        }
+        else
+        {
+            Console.WriteLine("Invalid ChangeSet JSON (null)");
+        }
     }
 
     public async Task SubscribeDocument(string uniqueId)
