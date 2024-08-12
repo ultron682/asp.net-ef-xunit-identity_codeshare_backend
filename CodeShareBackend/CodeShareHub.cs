@@ -11,8 +11,8 @@ public class CodeShareHub : Hub
     private static Dictionary<string, string> _connectionsNgroup = new Dictionary<string, string>();
 
 
-    private static Dictionary<string, Text> Documents = new Dictionary<string, Text>();
-    private static Dictionary<string, List<ChangeSet>> DocumentChanges = new Dictionary<string, List<ChangeSet>>();
+    private static Dictionary<string, Text> Documents = [];
+    private static Dictionary<string, List<ChangeSet>> DocumentChanges = [];
 
     public CodeShareHub(ApplicationDbContext context, UserManager<User> userManager)
     {
