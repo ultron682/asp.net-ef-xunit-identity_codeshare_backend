@@ -14,36 +14,36 @@ public class CodeShareHub : Hub
     private static Dictionary<string, Text> Documents = new Dictionary<string, Text>();
     private static Dictionary<string, List<ChangeSet>> DocumentChanges = new Dictionary<string, List<ChangeSet>>();
 
-    public async Task JoinDocument(string documentId)
+    public async Task JoinDocument(string uniqueId)
     {
-        if (!Documents.ContainsKey(documentId))
+        if (!Documents.ContainsKey(uniqueId))
         {
-            Documents[documentId] = new Text("Start document");
-            DocumentChanges[documentId] = new List<ChangeSet>();
+            Documents[uniqueId] = new Text("Start document");
+            DocumentChanges[uniqueId] = new List<ChangeSet>();
         }
 
-        await Clients.Caller.SendAsync("ReceiveDocument", Documents[documentId].ToString(), DocumentChanges[documentId]);
+        await Clients.Caller.SendAsync("ReceiveDocument", Documents[uniqueId].ToString(), DocumentChanges[uniqueId]);
     }
 
-    public async Task PushUpdate(string documentId, string changeSetJson)
+    public async Task PushUpdate(string uniqueId, string changeSetJson)
     {
         var changeSet = ChangeSet.FromJSON(changeSetJson);
-        var document = Documents[documentId].ApplyChangeSet(changeSet);
+        var document = Documents[uniqueId].ApplyChangeSet(changeSet);
 
-        Documents[documentId] = document;
-        DocumentChanges[documentId].Add(changeSet);
+        Documents[uniqueId] = document;
+        DocumentChanges[uniqueId].Add(changeSet);
 
-        await Clients.OthersInGroup(documentId).SendAsync("ReceiveUpdate", changeSetJson);
+        await Clients.OthersInGroup(uniqueId).SendAsync("ReceiveUpdate", changeSetJson);
     }
 
-    public async Task SubscribeDocument(string documentId)
+    public async Task SubscribeDocument(string uniqueId)
     {
-        await Groups.AddToGroupAsync(Context.ConnectionId, documentId);
+        await Groups.AddToGroupAsync(Context.ConnectionId, uniqueId);
     }
 
-    public async Task UnsubscribeDocument(string documentId)
+    public async Task UnsubscribeDocument(string uniqueId)
     {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, documentId);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, uniqueId);
     }
 
 
