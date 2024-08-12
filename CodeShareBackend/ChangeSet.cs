@@ -5,12 +5,17 @@ public class ChangeSet
     public int Start { get; set; }
     public int Length { get; set; }
     public string Text { get; set; }
+    public int LineIndex { get; set; }
+    public int CharIndexInLine { get; set; }
 
-    public ChangeSet(int start, int length, string text)
+
+    public ChangeSet(int start, int length, string text, int lineIndex, int charIndexInLine)
     {
         Start = start;
         Length = length;
         Text = text;
+        LineIndex = lineIndex;
+        CharIndexInLine = charIndexInLine;
     }
 
     public static ChangeSet? FromJSON(string json)
@@ -20,7 +25,7 @@ public class ChangeSet
 
     public string Apply(string document)
     {
-        if (Start < 0 || Start > document.Length)
+        if (Start < 0 || Start > document.Length || Length > document.Length)
         {
             throw new ArgumentOutOfRangeException("Invalid ChangeSet range");
         }
