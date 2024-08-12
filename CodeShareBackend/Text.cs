@@ -21,7 +21,7 @@ public class Text
 
     public Text ApplyChangeSet(ChangeSet changeSet)
     {
-        string currentText = this.ToString();
+        string currentText = ToString();
         string updatedText = changeSet.Apply(currentText);
         return new Text(updatedText.Split('\n').ToList());
     }
