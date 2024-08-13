@@ -9,7 +9,7 @@
         public string? UserId { get; set; }
         public int SelectedLangId { get; set; }
 
-        public User? User { get; set; }
+        public UserCodeShare? User { get; set; }
         public ProgLanguage? SelectedLang { get; set; }
     }
 }

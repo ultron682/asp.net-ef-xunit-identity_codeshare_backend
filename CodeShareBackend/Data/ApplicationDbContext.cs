@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace CodeShareBackend.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<User>
+    public class ApplicationDbContext : IdentityDbContext<UserCodeShare>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -26,7 +26,7 @@ namespace CodeShareBackend.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<UserCodeShare>()
                 .HasMany(u => u.CodeSnippets)
                 .WithOne(c => c.User)
                 .HasForeignKey(c => c.UserId)

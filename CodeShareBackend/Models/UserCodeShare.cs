@@ -2,7 +2,7 @@
 
 namespace CodeShareBackend.Models
 {
-    public class User: IdentityUser
+    public class UserCodeShare: IdentityUser
     {
         public List<CodeSnippet> CodeSnippets { get; set; } = new List<CodeSnippet>();
     }

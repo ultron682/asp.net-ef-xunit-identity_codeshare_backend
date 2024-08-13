@@ -18,12 +18,12 @@ namespace CodeShareBackend.Controllers
     public class AccountController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly SignInManager<User> _signInManager;
-        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<UserCodeShare> _signInManager;
+        private readonly UserManager<UserCodeShare> _userManager;
         private readonly IConfiguration _configuration;
 
-        public AccountController(ApplicationDbContext context, SignInManager<User> signInManager, 
-            UserManager<User> userManager, IConfiguration configuration)
+        public AccountController(ApplicationDbContext context, SignInManager<UserCodeShare> signInManager,
+            UserManager<UserCodeShare> userManager, IConfiguration configuration)
         {
             _context = context;
             _signInManager = signInManager;
@@ -38,7 +38,7 @@ namespace CodeShareBackend.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = new User { UserName = model.UserName, Email = model.Email };
+            var user = new UserCodeShare { UserName = model.UserName, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
@@ -57,17 +57,21 @@ namespace CodeShareBackend.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
-
-            if (result.Succeeded)
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user != null)
             {
-                var user = await _userManager.FindByEmailAsync(model.Email);
-                var token = JwtTokenGenerator.GenerateToken(user.Email, new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])), _configuration["Jwt:Issuer"], _configuration["Jwt:Audience"]);
-                return Ok(new { accessToken = token });
-            }
+                var result = await _signInManager.PasswordSignInAsync(user!.UserName!, model.Password, true, false);
 
-            if (result.IsLockedOut)
-                return Unauthorized("User account locked out");
+                if (result.Succeeded)
+                {
+                    user = await _userManager.FindByEmailAsync(model.Email);
+                    var token = JwtTokenGenerator.GenerateToken(user!.Email!, new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])), _configuration["Jwt:Issuer"], _configuration["Jwt:Audience"]);
+                    return Ok(new { accessToken = token });
+                }
+
+                if (result.IsLockedOut)
+                    return Unauthorized("User account locked out");
+            }
 
             return Unauthorized("Invalid login attempt");
         }
@@ -78,7 +82,7 @@ namespace CodeShareBackend.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteSnipet(string UniqueId)
         {
-            User? user = await _userManager.GetUserAsync(User);
+            UserCodeShare? user = await _userManager.GetUserAsync(User);
 
             if (user == null)
             {
@@ -157,7 +161,7 @@ namespace CodeShareBackend.Controllers
         [Authorize]
         public async Task<IActionResult> GetSnippets()
         {
-            User? user = await _userManager.GetUserAsync(User);
+            UserCodeShare? user = await _userManager.GetUserAsync(User);
 
             if (user == null)
             {

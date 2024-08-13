@@ -36,7 +36,7 @@ builder.Services
 //builder.Services.AddIdentityApiEndpoints<User>()
 //    .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddIdentity<User, IdentityRole>()
+builder.Services.AddIdentity<UserCodeShare, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 

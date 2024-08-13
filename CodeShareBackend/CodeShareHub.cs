@@ -8,13 +8,13 @@ using Microsoft.EntityFrameworkCore;
 public class CodeShareHub : Hub
 {
     private readonly ApplicationDbContext _context;
-    private readonly UserManager<User> _userManager;
+    private readonly UserManager<UserCodeShare> _userManager;
 
     private static Dictionary<string, string> _connectionsNgroup = [];
 
     private static Dictionary<string, Text> CurrentOpenDocuments = [];
 
-    public CodeShareHub(ApplicationDbContext context, UserManager<User> userManager)
+    public CodeShareHub(ApplicationDbContext context, UserManager<UserCodeShare> userManager)
     {
         _context = context;
         _userManager = userManager;
