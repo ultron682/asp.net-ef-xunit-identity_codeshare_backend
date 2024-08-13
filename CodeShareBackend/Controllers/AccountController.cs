@@ -68,6 +68,10 @@ namespace CodeShareBackend.Controllers
                     var token = JwtTokenGenerator.GenerateToken(user!.Email!, new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])), _configuration["Jwt:Issuer"], _configuration["Jwt:Audience"]);
                     return Ok(new { accessToken = token });
                 }
+                else
+                {
+                    return Unauthorized("Unsucceeded");
+                }
 
                 if (result.IsLockedOut)
                     return Unauthorized("User account locked out");
