@@ -10,9 +10,9 @@ namespace CodeShareBackend.Helpers
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, email),
+                new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+             };
 
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

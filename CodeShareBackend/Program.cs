@@ -1,8 +1,11 @@
 ﻿using CodeShareBackend.Data;
 using CodeShareBackend.Models;
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -77,10 +80,10 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = true;
 });
 
-builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>
-{
-    options.BearerTokenExpiration = TimeSpan.FromSeconds(604800); // 7 days
-});
+//builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>
+//{
+//    options.BearerTokenExpiration = TimeSpan.FromSeconds(604800); // 7 days
+//});
 
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
@@ -106,6 +109,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

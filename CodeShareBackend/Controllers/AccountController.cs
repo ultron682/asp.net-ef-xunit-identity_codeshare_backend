@@ -1,10 +1,14 @@
 ﻿using CodeShareBackend.Data;
+using CodeShareBackend.Helpers;
 using CodeShareBackend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Text;
 
 namespace CodeShareBackend.Controllers
 {
@@ -16,12 +20,15 @@ namespace CodeShareBackend.Controllers
         private readonly ApplicationDbContext _context;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _configuration;
 
-        public AccountController(ApplicationDbContext context, SignInManager<User> signInManager, UserManager<User> userManager)
+        public AccountController(ApplicationDbContext context, SignInManager<User> signInManager, 
+            UserManager<User> userManager, IConfiguration configuration)
         {
             _context = context;
             _signInManager = signInManager;
             _userManager = userManager;
+            _configuration = configuration;
         }
 
         [AllowAnonymous]
@@ -31,7 +38,7 @@ namespace CodeShareBackend.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = new User { UserName = model.Email, Email = model.Email };
+            var user = new User { UserName = model.UserName, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
@@ -53,7 +60,11 @@ namespace CodeShareBackend.Controllers
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
 
             if (result.Succeeded)
-                return Ok("Login successful");
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                var token = JwtTokenGenerator.GenerateToken(user.Email, new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])), _configuration["Jwt:Issuer"], _configuration["Jwt:Audience"]);
+                return Ok(new { accessToken = token });
+            }
 
             if (result.IsLockedOut)
                 return Unauthorized("User account locked out");
@@ -62,7 +73,9 @@ namespace CodeShareBackend.Controllers
         }
 
 
+
         [HttpDelete("{UniqueId}")]
+        [Authorize]
         public async Task<IActionResult> DeleteSnipet(string UniqueId)
         {
             User? user = await _userManager.GetUserAsync(User);
@@ -91,15 +104,32 @@ namespace CodeShareBackend.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAccountInfo()
         {
-            User? user = await _userManager.GetUserAsync(User);
+            //User? user = await _userManager.GetUserAsync(User);
             //Console.WriteLine(user?.Email + user?.Id);
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            var userName = User.FindFirstValue(ClaimTypes.Name);
+
+            // Log claims for debugging purposes
+            Console.WriteLine($"Email: {email}");
+            Console.WriteLine($"UserName: {userName}");
+
+            if (email == null)
+                return Unauthorized("User not authenticated");
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+                return NotFound("User not found");
 
             if (user == null)
             {
                 return Unauthorized("User not found in token");
             }
+
+            Console.WriteLine(user.Email + user.Id);
 
             var accountInfo = await _context.Users
                 .Where(u => u.Id == user.Id)
@@ -124,6 +154,7 @@ namespace CodeShareBackend.Controllers
         }
 
         [HttpGet("snippet")]
+        [Authorize]
         public async Task<IActionResult> GetSnippets()
         {
             User? user = await _userManager.GetUserAsync(User);
