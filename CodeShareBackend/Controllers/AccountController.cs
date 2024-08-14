@@ -89,12 +89,14 @@ namespace CodeShareBackend.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteSnipet(string UniqueId)
         {
-            UserCodeShare? user = await _userManager.GetUserAsync(User);
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (email == null)
+                return Unauthorized("User not authenticated");
+            
+            var user = await _userManager.FindByEmailAsync(email);
 
             if (user == null)
-            {
-                return Unauthorized("User not found in token");
-            }
+                return NotFound("User not found");
 
             var snippet = await _context.CodeSnippets.SingleOrDefaultAsync(s => s.UniqueId == UniqueId);
 
@@ -121,13 +123,13 @@ namespace CodeShareBackend.Controllers
             //User? user = await _userManager.GetUserAsync(User);
             //Console.WriteLine(user?.Email + user?.Id);
             var email = User.FindFirstValue(ClaimTypes.Email);
-            var userName = User.FindFirstValue(ClaimTypes.Name);
-            var idToken = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            //var userName = User.FindFirstValue(ClaimTypes.Name);
+            //var idToken = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             // Log claims for debugging purposes
             Console.WriteLine($"Email: {email}");
-            Console.WriteLine($"UserName: {userName}");
-            Console.WriteLine($"IdToken: {idToken}");
+            //Console.WriteLine($"UserName: {userName}");
+            //Console.WriteLine($"IdToken: {idToken}");
 
             if (email == null)
                 return Unauthorized("User not authenticated");
@@ -136,11 +138,6 @@ namespace CodeShareBackend.Controllers
 
             if (user == null)
                 return NotFound("User not found");
-
-            if (user == null)
-            {
-                return Unauthorized("User not found in token");
-            }
 
             Console.WriteLine(user.Email + user.Id);
 
@@ -170,7 +167,14 @@ namespace CodeShareBackend.Controllers
         [Authorize]
         public async Task<IActionResult> GetSnippets()
         {
-            UserCodeShare? user = await _userManager.GetUserAsync(User);
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (email == null)
+                return Unauthorized("User not authenticated");
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+                return NotFound("User not found");
 
             if (user == null)
             {
