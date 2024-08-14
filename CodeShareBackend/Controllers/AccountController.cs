@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
@@ -65,16 +66,18 @@ namespace CodeShareBackend.Controllers
                 if (result.Succeeded)
                 {
                     user = await _userManager.FindByEmailAsync(model.Email);
-                    var token = JwtTokenGenerator.GenerateToken(user!.Email!, new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])), _configuration["Jwt:Issuer"], _configuration["Jwt:Audience"]);
+                    var token = JwtTokenGenerator.GenerateToken(user!.Email!, user!.UserName!, new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])), _configuration["Jwt:Issuer"], _configuration["Jwt:Audience"]);
                     return Ok(new { accessToken = token });
+                }
+                else if (result.IsLockedOut)
+                {
+                    return Unauthorized("User account locked out");
                 }
                 else
                 {
                     return Unauthorized("Unsucceeded");
                 }
-
-                if (result.IsLockedOut)
-                    return Unauthorized("User account locked out");
+                    
             }
 
             return Unauthorized("Invalid login attempt");
@@ -119,10 +122,12 @@ namespace CodeShareBackend.Controllers
             //Console.WriteLine(user?.Email + user?.Id);
             var email = User.FindFirstValue(ClaimTypes.Email);
             var userName = User.FindFirstValue(ClaimTypes.Name);
+            var idToken = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             // Log claims for debugging purposes
             Console.WriteLine($"Email: {email}");
             Console.WriteLine($"UserName: {userName}");
+            Console.WriteLine($"IdToken: {idToken}");
 
             if (email == null)
                 return Unauthorized("User not authenticated");
