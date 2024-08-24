@@ -186,8 +186,13 @@ namespace CodeShareBackend.Controllers
             return Ok(snippets);
         }
 
-        public async Task<IActionResult> ChangeNickname(string newNickname)
+        [HttpPatch("nickname")]
+        [Authorize]
+        public async Task<IActionResult> ChangeNickname([FromForm] string newUsername)
         {
+            if (string.IsNullOrWhiteSpace(newUsername))
+                return BadRequest("Invalid username");
+
             var email = User.FindFirstValue(ClaimTypes.Email);
             if (email == null)
                 return Unauthorized("User not authenticated");
@@ -197,11 +202,36 @@ namespace CodeShareBackend.Controllers
             if (user == null)
                 return NotFound("User not found");
 
-            user.UserName = newNickname;
+            user.UserName = newUsername;
             await _userManager.UpdateAsync(user);
 
             return Ok();
         }
+
+        //[HttpPost]
+        //[Authorize]
+        //public async Task<IActionResult> ResendConfirmationEmail()
+        //{
+        //    var email = User.FindFirstValue(ClaimTypes.Email);
+        //    if (email == null)
+        //        return Unauthorized("User not authenticated");
+
+        //    var user = await _userManager.FindByEmailAsync(email);
+
+        //    if (user == null)
+        //        return NotFound("User not found");
+
+        //    if (user.EmailConfirmed)
+        //        return BadRequest("Email already confirmed");
+
+        //    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        //    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme);
+
+        //    // Send email with confirmation link
+        //    Console.WriteLine(confirmationLink);
+
+        //    return Ok();
+        //}
 
     }
 }
