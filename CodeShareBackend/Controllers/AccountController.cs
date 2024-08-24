@@ -3,6 +3,7 @@ using CodeShareBackend.Helpers;
 using CodeShareBackend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
 
 namespace CodeShareBackend.Controllers
 {
@@ -43,10 +45,21 @@ namespace CodeShareBackend.Controllers
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
-                return Ok("User registered successfully");
+            {
+                await SendConfirmationEmail(model.Email, user);
 
-            foreach (var error in result.Errors)
-                ModelState.AddModelError(string.Empty, error.Description);
+                return Ok("User registered successfully");
+            }
+            else
+            {
+                foreach (var error in result.Errors)
+                    return error.Code switch
+                    {
+                        "DuplicateUserName" => StatusCode(450,"Username already taken"),
+                        "DuplicateEmail" => StatusCode(452, "Email already taken"),
+                        _ => StatusCode(454, error.Code)
+                    };
+            }
 
             return BadRequest(ModelState);
         }
@@ -59,8 +72,14 @@ namespace CodeShareBackend.Controllers
                 return BadRequest(ModelState);
 
             var user = await _userManager.FindByEmailAsync(model.Email);
+
             if (user != null)
             {
+                if (user.EmailConfirmed == false)
+                {
+                    return StatusCode(470);
+                }
+
                 var result = await _signInManager.PasswordSignInAsync(user!.UserName!, model.Password, true, false);
 
                 if (result.Succeeded)
@@ -208,9 +227,9 @@ namespace CodeShareBackend.Controllers
             return Ok();
         }
 
-        //[HttpPost]
+        //[HttpPost("send-confirmation-email")]
         //[Authorize]
-        //public async Task<IActionResult> ResendConfirmationEmail()
+        //public async Task<IActionResult> SendConfirmationEmail()
         //{
         //    var email = User.FindFirstValue(ClaimTypes.Email);
         //    if (email == null)
@@ -225,13 +244,47 @@ namespace CodeShareBackend.Controllers
         //        return BadRequest("Email already confirmed");
 
         //    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        //    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme);
+        //    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token }, Request.Scheme);
 
         //    // Send email with confirmation link
         //    Console.WriteLine(confirmationLink);
 
         //    return Ok();
         //}
+
+        private async Task SendConfirmationEmail(string? email, UserCodeShare? user)
+        {
+            //Generate the Token
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            //Build the Email Confirmation Link which must include the Callback URL
+            var ConfirmationLink = Url.Action("ConfirmEmail", "Account",
+            new { userId = user.Id, token }, protocol: Request.Scheme);
+
+            Console.WriteLine($"Please confirm your account by <a href='{ConfirmationLink!}'>clicking here</a>.");
+
+            //Send the Confirmation Email to the User Email Id
+            // await emailSender.SendEmailAsync(email, "Confirm Your Email", $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(ConfirmationLink)}'>clicking here</a>.", true);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("confirm")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (token == null)
+            {
+                return BadRequest("token == null");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("Not found user");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            return result.Succeeded ? Redirect("http://localhost:3000/account/confirmedEmail") : BadRequest("Error");
+        }
 
     }
 }
