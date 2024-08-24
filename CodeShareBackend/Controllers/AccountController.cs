@@ -150,6 +150,7 @@ namespace CodeShareBackend.Controllers
                     u.Id,
                     u.Email,
                     u.UserName,
+                    u.EmailConfirmed,
                     // code snippets with max 20 chars
                     CodeSnippets = u.CodeSnippets.Select(cs => new
                     {

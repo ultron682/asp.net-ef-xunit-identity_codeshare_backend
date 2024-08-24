@@ -29,6 +29,7 @@ public class CodeShareHub : Hub
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, _connectionsNgroup[Context.ConnectionId]);
             _connectionsNgroup.Remove(Context.ConnectionId);
         }
+
         _connectionsNgroup.Add(Context.ConnectionId, uniqueId);
 
         await Groups.AddToGroupAsync(Context.ConnectionId, uniqueId);
