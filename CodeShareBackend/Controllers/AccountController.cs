@@ -77,7 +77,7 @@ namespace CodeShareBackend.Controllers
                 {
                     return Unauthorized("Unsucceeded");
                 }
-                    
+
             }
 
             return Unauthorized("Invalid login attempt");
@@ -92,7 +92,7 @@ namespace CodeShareBackend.Controllers
             var email = User.FindFirstValue(ClaimTypes.Email);
             if (email == null)
                 return Unauthorized("User not authenticated");
-            
+
             var user = await _userManager.FindByEmailAsync(email);
 
             if (user == null)
@@ -184,6 +184,23 @@ namespace CodeShareBackend.Controllers
 
             var snippets = await _context.CodeSnippets.Where(s => s.UserId == user.Id).ToListAsync();
             return Ok(snippets);
+        }
+
+        public async Task<IActionResult> ChangeNickname(string newNickname)
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (email == null)
+                return Unauthorized("User not authenticated");
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+                return NotFound("User not found");
+
+            user.UserName = newNickname;
+            await _userManager.UpdateAsync(user);
+
+            return Ok();
         }
 
     }
