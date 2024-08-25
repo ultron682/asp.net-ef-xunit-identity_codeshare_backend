@@ -1,12 +1,15 @@
 ﻿using CodeShareBackend.Data;
+using CodeShareBackend.IServices;
 using CodeShareBackend.Models;
-using Microsoft.AspNetCore.Authentication.BearerToken;
+using CodeShareBackend.Services;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,6 +99,7 @@ builder.Services.AddSignalR(o =>
     o.EnableDetailedErrors = true;
 });
 
+builder.Services.AddScoped<IAccountService,AccountService>();
 
 
 var app = builder.Build();
@@ -116,8 +120,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<CodeShareHub>("/codesharehub").AllowAnonymous();
-
-//app.MapIdentityApi<User>();
 
 app.Run();
 
