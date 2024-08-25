@@ -138,7 +138,6 @@ namespace CodeShareBackend.Services
             }
 
             token = Uri.UnescapeDataString(token);
-            Console.WriteLine("Readed token: " + token);
 
             return await _userManager.ConfirmEmailAsync(user, token);
         }
