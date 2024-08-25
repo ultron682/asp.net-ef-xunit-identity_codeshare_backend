@@ -1,9 +1,8 @@
 ﻿using CodeShareBackend.IServices;
-using CodeShareBackend.Models;
-using CodeShareBackend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+
 
 namespace CodeShareBackend.Controllers
 {
@@ -57,14 +56,61 @@ namespace CodeShareBackend.Controllers
 
             var user = await _accountService.GetUserByEmailAsync(model.Email);
 
-            if (user != null && await _accountService.IsValidUser(user.Email, model.Password))
+            if (user != null)
             {
-                var token = await _accountService.GenerateJwtToken(user);
-                return Ok(new { accessToken = token });
+                if (!user.EmailConfirmed)
+                {
+                    return StatusCode(470, "Email unconfirmed");
+                }
+
+                var loginResult = await _accountService.LoginUser(user, model.Password);
+                if (loginResult != null)
+                {
+                    var token = await _accountService.GenerateJwtToken(user);
+                    return Ok(new { accessToken = token });
+                }
             }
 
             return Unauthorized("Invalid login attempt");
         }
+
+        /*[AllowAnonymous]
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequestCodeShare model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user != null)
+            {
+                if (user.EmailConfirmed == false)
+                {
+                    return StatusCode(470);
+                }
+
+                var result = await _signInManager.PasswordSignInAsync(user!.UserName!, model.Password, true, false);
+
+                if (result.Succeeded)
+                {
+                    user = await _userManager.FindByEmailAsync(model.Email);
+                    var token = JwtTokenGenerator.GenerateToken(user!.Email!, user!.UserName!, new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])), _configuration["Jwt:Issuer"], _configuration["Jwt:Audience"]);
+                    return Ok(new { accessToken = token });
+                }
+                else if (result.IsLockedOut)
+                {
+                    return Unauthorized("User account locked out");
+                }
+                else
+                {
+                    return Unauthorized("Unsucceeded");
+                }
+
+            }
+
+            return Unauthorized("Invalid login attempt");
+        }*/
 
         [HttpDelete("{UniqueId}")]
         [Authorize]
@@ -138,6 +184,19 @@ namespace CodeShareBackend.Controllers
         }
 
         [AllowAnonymous]
+        [HttpPost("send-confirmation-email")]
+        public async Task<IActionResult> SendConfirmationEmail([FromForm] string email)
+        {
+            var user = await _accountService.GetUserByEmailAsync(email);
+            if (user == null)
+                return NotFound("User not found");
+
+            var isSent = await _accountService.SendConfirmationEmail(email, user);
+            return isSent ? Ok("Mail sent") : BadRequest("Failed to send confirmation email");
+        }
+
+
+        [AllowAnonymous]
         [HttpGet("confirm")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
@@ -153,14 +212,20 @@ namespace CodeShareBackend.Controllers
             }
 
             var result = await _accountService.ConfirmEmailAsync(userId, token);
-            
-            foreach (var error in result.Errors)
+
+            if (result.Succeeded)
             {
-                Console.WriteLine(error.Description);
+                return Redirect("http://localhost:3000/account/confirmedEmail/");
             }
+            else
+            {
+                foreach (var error in result.Errors)
+                {
+                    Console.WriteLine(error.Description);
+                }
 
-
-            return result.Succeeded ? Redirect("http://localhost:3000/account/confirmedEmail/") : BadRequest("Error");
+                return BadRequest("Error");
+            }
         }
     }
 }

@@ -3,14 +3,10 @@ using CodeShareBackend.Helpers;
 using CodeShareBackend.IServices;
 using CodeShareBackend.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
-using System.Web;
+
 
 namespace CodeShareBackend.Services
 {
@@ -48,16 +44,9 @@ namespace CodeShareBackend.Services
             return token;
         }
 
-        public async Task<bool> IsValidUser(string email, string password)
+        public async Task<SignInResult?> LoginUser(UserCodeShare user, string password)
         {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null || !user.EmailConfirmed)
-            {
-                return false;
-            }
-
-            var result = await _signInManager.PasswordSignInAsync(user.UserName, password, true, false);
-            return result.Succeeded;
+            return await _signInManager.PasswordSignInAsync(user.UserName!, password, true, false);
         }
 
         public async Task<UserCodeShare?> GetUserByIdAsync(string userId)
@@ -120,6 +109,9 @@ namespace CodeShareBackend.Services
 
         public async Task<bool> SendConfirmationEmail(string email, UserCodeShare user)
         {
+            if (user == null || email == null)
+                return false;
+
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             token = Uri.EscapeDataString(token);
             var ConfirmationLink = $"http://localhost:5555/account/confirm?userId={user.Id}&token={token}";

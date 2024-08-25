@@ -12,7 +12,7 @@ namespace CodeShareBackend.IServices
         Task<List<CodeSnippet>> GetSnippetsByUserIdAsync(string userId);
         Task<UserCodeShare?> GetUserByEmailAsync(string email);
         Task<UserCodeShare?> GetUserByIdAsync(string userId);
-        Task<bool> IsValidUser(string email, string password);
+        Task<SignInResult?> LoginUser(UserCodeShare user, string password);
         Task<IdentityResult> RegisterUser(RegisterRequestCodeShare model);
         Task<bool> SendConfirmationEmail(string email, UserCodeShare user);
         Task<bool> UpdateUserNameAsync(string userId, string newUsername);
