@@ -103,6 +103,8 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 
 builder.Services.AddScoped<IAccountService,AccountService>();
 builder.Services.AddTransient<IMailService, MailService>();
+builder.Services.AddSingleton<HtmlTemplateService>();
+
 
 var app = builder.Build();
 

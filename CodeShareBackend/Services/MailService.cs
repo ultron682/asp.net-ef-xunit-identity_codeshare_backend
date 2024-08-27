@@ -8,7 +8,7 @@ namespace CodeShareBackend.Services
 {
     public class MailService : IMailService
     {
-        MailSettings Mail_Settings = null;
+        MailSettings Mail_Settings;
         public MailService(IOptions<MailSettings> options)
         {
             Mail_Settings = options.Value;
@@ -20,11 +20,13 @@ namespace CodeShareBackend.Services
                 MimeMessage email_Message = new MimeMessage();
                 MailboxAddress email_From = new MailboxAddress(Mail_Settings.Name, Mail_Settings.EmailId);
                 email_Message.From.Add(email_From);
+                
                 MailboxAddress email_To = new MailboxAddress(Mail_Data.EmailToName, Mail_Data.EmailToId);
                 email_Message.To.Add(email_To);
                 email_Message.Subject = Mail_Data.EmailSubject;
+                
                 BodyBuilder emailBodyBuilder = new BodyBuilder();
-                emailBodyBuilder.TextBody = Mail_Data.EmailBody;
+                emailBodyBuilder.HtmlBody = Mail_Data.EmailBody;
                 email_Message.Body = emailBodyBuilder.ToMessageBody();
 
                 SmtpClient MailClient = new SmtpClient();
@@ -37,7 +39,7 @@ namespace CodeShareBackend.Services
             }
             catch (Exception ex)
             {
-                // Exception Details
+                Console.WriteLine(ex.ToString());
                 return false;
             }
         }

@@ -17,15 +17,18 @@ namespace CodeShareBackend.Services
         private readonly SignInManager<UserCodeShare> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly IMailService _mail_Service;
+        private readonly HtmlTemplateService _htmlTemplateService;
+
 
         public AccountService(ApplicationDbContext context, UserManager<UserCodeShare> userManager,
-            SignInManager<UserCodeShare> signInManager, IConfiguration configuration, IMailService mail_Service)
+            SignInManager<UserCodeShare> signInManager, IConfiguration configuration, IMailService mail_Service, HtmlTemplateService htmlTemplateService)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _mail_Service = mail_Service;
+            _htmlTemplateService = htmlTemplateService;
         }
 
         public async Task<IdentityResult> RegisterUser(RegisterRequestCodeShare model)
@@ -120,9 +123,15 @@ namespace CodeShareBackend.Services
 
             Console.WriteLine($"Please confirm your account by <a href='{ConfirmationLink!}'>clicking here</a>.");
 
+            string emailBody = await _htmlTemplateService.GetEmailTemplateAsync("wwwroot/EmailTemplates/confirm_email_template.html", new Dictionary<string, string>
+            {
+                { "ConfirmationLink", ConfirmationLink! },
+                { "UserName", user.UserName! }
+            });
+
             _mail_Service.SendMail(new MailData()
             {
-                EmailBody = $"Please confirm your account by <a href='{ConfirmationLink!}'>clicking here</a>.",
+                EmailBody = emailBody,
                 EmailSubject = "Confirm your account",
                 EmailToId = email,
                 EmailToName = user.UserName!
