@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { });
 
 builder.Services.AddCors(options =>
 {
@@ -30,7 +30,7 @@ builder.Services.AddSwaggerGen();
 builder.Services
     .AddDbContext<ApplicationDbContext>(options =>
     {
-        options.UseSqlServer(builder.Configuration.GetConnectionString("TrelloDBConnection"));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("CodeShareDbConnection"));
         options.EnableSensitiveDataLogging(false);
     }
 );
@@ -99,8 +99,10 @@ builder.Services.AddSignalR(o =>
     o.EnableDetailedErrors = true;
 });
 
-builder.Services.AddScoped<IAccountService,AccountService>();
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
+builder.Services.AddScoped<IAccountService,AccountService>();
+builder.Services.AddTransient<IMailService, MailService>();
 
 var app = builder.Build();
 
