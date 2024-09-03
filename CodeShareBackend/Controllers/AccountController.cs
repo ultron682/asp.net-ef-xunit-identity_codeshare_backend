@@ -74,44 +74,6 @@ namespace CodeShareBackend.Controllers
             return Unauthorized("Invalid login attempt");
         }
 
-        /*[AllowAnonymous]
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequestCodeShare model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var user = await _userManager.FindByEmailAsync(model.Email);
-
-            if (user != null)
-            {
-                if (user.EmailConfirmed == false)
-                {
-                    return StatusCode(470);
-                }
-
-                var result = await _signInManager.PasswordSignInAsync(user!.UserName!, model.Password, true, false);
-
-                if (result.Succeeded)
-                {
-                    user = await _userManager.FindByEmailAsync(model.Email);
-                    var token = JwtTokenGenerator.GenerateToken(user!.Email!, user!.UserName!, new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])), _configuration["Jwt:Issuer"], _configuration["Jwt:Audience"]);
-                    return Ok(new { accessToken = token });
-                }
-                else if (result.IsLockedOut)
-                {
-                    return Unauthorized("User account locked out");
-                }
-                else
-                {
-                    return Unauthorized("Unsucceeded");
-                }
-
-            }
-
-            return Unauthorized("Invalid login attempt");
-        }*/
-
         [HttpDelete("{UniqueId}")]
         [Authorize]
         public async Task<IActionResult> DeleteSnipet(string UniqueId)

@@ -25,7 +25,8 @@ public class ChangeSet
 
     public string Apply(string document)
     {
-        if (Start < 0 || Start > document.Length || Length > document.Length)
+        //Start > document.Length || Length > document.Length
+        if (Start < 0)
         {
             throw new ArgumentOutOfRangeException("Invalid ChangeSet range");
         }

@@ -35,7 +35,8 @@ public class CodeShareHub : Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, uniqueId);
         printConnectionsNgroup();
 
-        var snippet = await _context.CodeSnippets.Include(l => l.SelectedLang).SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
+        var snippet = await _context.CodeSnippets.Include(l => l.SelectedLang).Select(
+            s => new { s.Code, s.ExpiryDate, s.Id, s.SelectedLang, s.UniqueId, ownerNickname = s.User != null ? s.User!.UserName : null }).SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
 
         if (!CurrentOpenDocuments.ContainsKey(uniqueId))
         {
@@ -108,5 +109,36 @@ public class CodeShareHub : Hub
             Console.WriteLine(item.Value + " : " + item.Key);
         }
         Console.WriteLine("--------------------------\n");
+    }
+
+
+
+
+
+
+
+
+
+
+    public async Task PushUpdates(int version, string updatesJson)
+    {
+        // Handle updates
+        await Clients.All.SendAsync("ReceiveUpdates", version, updatesJson);
+    }
+
+    public async Task<string> PullUpdates(int version)
+    {
+        // Retrieve updates based on version
+        // This is just an example, replace it with your actual logic
+        string updatesJson = "[]";
+        return await Task.FromResult(updatesJson);
+    }
+
+    public async Task<(int version, string doc)> GetDocument()
+    {
+        // Example document data, replace with your actual logic
+        int version = 1;
+        string doc = "Initial document content";
+        return await Task.FromResult((version, doc));
     }
 }
