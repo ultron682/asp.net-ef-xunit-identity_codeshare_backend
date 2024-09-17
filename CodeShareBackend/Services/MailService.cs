@@ -17,6 +17,12 @@ namespace CodeShareBackend.Services
         {
             try
             {
+                if (Mail_Settings.UserName == string.Empty)
+                {
+                    Console.WriteLine("Mail Settings not found in appsettings.json");
+                    return false;
+                }
+
                 MimeMessage email_Message = new MimeMessage();
                 MailboxAddress email_From = new MailboxAddress(Mail_Settings.Name, Mail_Settings.EmailId);
                 email_Message.From.Add(email_From);
