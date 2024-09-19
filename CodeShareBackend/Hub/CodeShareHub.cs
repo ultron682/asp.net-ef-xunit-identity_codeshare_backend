@@ -64,8 +64,9 @@ public class CodeShareHub : Hub {
                 return;
 
             if (snippet == null) {
-                //Console.WriteLine("userId: " + userId);
-                snippet = new CodeSnippet { UniqueId = uniqueId, Code = document.ToString(), UserId = (userId == string.Empty ? null : userId) };
+                int snippetCountForUser = await _context.CodeSnippets.CountAsync(s => s.UserId == userId); // only 10 snippets can belong to free user
+                Console.WriteLine(snippetCountForUser);
+                snippet = new CodeSnippet { UniqueId = uniqueId, Code = document.ToString(), UserId = (userId == string.Empty || snippetCountForUser >= 10 ? null : userId) };
                 _context.CodeSnippets.Add(snippet);
             }
             else {
