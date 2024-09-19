@@ -3,10 +3,11 @@ using CodeShareBackend.Data;
 using CodeShareBackend.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata;
+using System.Xml.Linq;
 
 
-public class CodeShareHub : Hub
-{
+public class CodeShareHub : Hub {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<UserCodeShare> _userManager;
 
@@ -14,18 +15,15 @@ public class CodeShareHub : Hub
 
     private static Dictionary<string, Text> CurrentOpenDocuments = [];
 
-    public CodeShareHub(ApplicationDbContext context, UserManager<UserCodeShare> userManager)
-    {
+    public CodeShareHub(ApplicationDbContext context, UserManager<UserCodeShare> userManager) {
         _context = context;
         _userManager = userManager;
     }
 
-    public async Task JoinToDocument(string uniqueId)
-    {
+    public async Task JoinToDocument(string uniqueId) {
         Console.WriteLine("JoinDocument: " + uniqueId + " : " + Context.ConnectionId);
 
-        if (_connectionsNgroup.ContainsKey(Context.ConnectionId))
-        {
+        if (_connectionsNgroup.ContainsKey(Context.ConnectionId)) {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, _connectionsNgroup[Context.ConnectionId]);
             _connectionsNgroup.Remove(Context.ConnectionId);
         }
@@ -36,27 +34,23 @@ public class CodeShareHub : Hub
         printConnectionsNgroup();
 
         var snippet = await _context.CodeSnippets.Include(l => l.SelectedLang).Select(
-            s => new { s.Code, s.ExpiryDate, s.Id, s.SelectedLang, s.UniqueId, ownerNickname = s.User != null ? s.User!.UserName : null }).SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
+            s => new { s.Code, s.ExpiryDate, s.Id, s.SelectedLang, s.UniqueId, owner = (s.User != null) ? new { nickname = s.User!.UserName, userId = s.User!.Id } : null, s.ReadOnly }).SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
 
-        if (!CurrentOpenDocuments.ContainsKey(uniqueId))
-        {
+        if (!CurrentOpenDocuments.ContainsKey(uniqueId)) {
             CurrentOpenDocuments[uniqueId] = new Text(snippet == null ? string.Empty : snippet.Code!);
         }
 
         await Clients.Caller.SendAsync("ReceiveDocument", snippet);
     }
 
-    public async Task PushUpdate(string changeSetJson, string userId)
-    {
-        if (_connectionsNgroup.ContainsKey(Context.ConnectionId) == false)
-        {
+    public async Task PushUpdate(string changeSetJson, string userId) {
+        if (_connectionsNgroup.ContainsKey(Context.ConnectionId) == false) {
             Console.WriteLine("Connection not in group");
             return;
         }
 
         var changeSet = ChangeSet.FromJSON(changeSetJson);
-        if (changeSet != null)
-        {
+        if (changeSet != null) {
             var uniqueId = _connectionsNgroup[Context.ConnectionId];
             //Console.WriteLine(uniqueId);
 
@@ -64,35 +58,71 @@ public class CodeShareHub : Hub
 
             CurrentOpenDocuments[uniqueId] = document;
 
-            if (_connectionsNgroup.ContainsKey(Context.ConnectionId))
-                await Clients.OthersInGroup(uniqueId).SendAsync("ReceiveUpdate", changeSetJson);
-
             var snippet = await _context.CodeSnippets.Include(u => u.SelectedLang).SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
-            if (snippet == null)
-            {
+
+            if (snippet?.ReadOnly == true && userId != snippet.UserId)
+                return;
+
+            if (snippet == null) {
                 //Console.WriteLine("userId: " + userId);
                 snippet = new CodeSnippet { UniqueId = uniqueId, Code = document.ToString(), UserId = (userId == string.Empty ? null : userId) };
                 _context.CodeSnippets.Add(snippet);
             }
-            else
-            {
+            else {
                 snippet.Code = document.ToString();
                 _context.CodeSnippets.Update(snippet);
             }
 
+
+            if (_connectionsNgroup.ContainsKey(Context.ConnectionId))
+                await Clients.OthersInGroup(uniqueId).SendAsync("ReceiveUpdate", changeSetJson);
+
             await _context.SaveChangesAsync();
         }
-        else
-        {
+        else {
             Console.WriteLine("Invalid ChangeSet JSON (null)");
         }
     }
 
+    public async Task ChangeCodeSnippetProperty(string property, string value, string userId) {
+        var uniqueId = _connectionsNgroup[Context.ConnectionId];
 
-    public override async Task OnDisconnectedAsync(Exception? exception)
-    {
+        var snippet = await _context.CodeSnippets.Include(u => u.SelectedLang).SingleOrDefaultAsync(s => s.UniqueId == uniqueId);
+
+        if (snippet == null)
+            return;
+
+        if (snippet.UserId == null || snippet.UserId != userId) // only owner can change doc property
+            return;
+
+        switch (property) {
+            case "lang": {
+                    if (snippet != null) {
+                        snippet.SelectedLang = _context.ProgLanguages.SingleOrDefault(s => s.Name == value);
+                        _context.CodeSnippets.Update(snippet);
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+                break;
+
+            case "readOnly": {
+                    if (snippet != null) {
+                        snippet.ReadOnly = (value == "true");
+                        _context.CodeSnippets.Update(snippet);
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+                break;
+        }
+
         if (_connectionsNgroup.ContainsKey(Context.ConnectionId))
-        {
+            await Clients.OthersInGroup(uniqueId).SendAsync("OnCodeSnippetPropertyChange", property, value);
+    }
+
+    public override async Task OnDisconnectedAsync(Exception? exception) {
+        if (_connectionsNgroup.ContainsKey(Context.ConnectionId)) {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, _connectionsNgroup[Context.ConnectionId]);
             _connectionsNgroup.Remove(Context.ConnectionId);
         }
@@ -101,44 +131,11 @@ public class CodeShareHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    void printConnectionsNgroup()
-    {
+    void printConnectionsNgroup() {
         Console.WriteLine("\n--------------------------");
-        foreach (var item in _connectionsNgroup)
-        {
+        foreach (var item in _connectionsNgroup) {
             Console.WriteLine(item.Value + " : " + item.Key);
         }
-        Console.WriteLine("--------------------------\n");
-    }
-
-
-
-
-
-
-
-
-
-
-    public async Task PushUpdates(int version, string updatesJson)
-    {
-        // Handle updates
-        await Clients.All.SendAsync("ReceiveUpdates", version, updatesJson);
-    }
-
-    public async Task<string> PullUpdates(int version)
-    {
-        // Retrieve updates based on version
-        // This is just an example, replace it with your actual logic
-        string updatesJson = "[]";
-        return await Task.FromResult(updatesJson);
-    }
-
-    public async Task<(int version, string doc)> GetDocument()
-    {
-        // Example document data, replace with your actual logic
-        int version = 1;
-        string doc = "Initial document content";
-        return await Task.FromResult((version, doc));
+        Console.WriteLine("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
     }
 }

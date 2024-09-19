@@ -86,7 +86,7 @@ namespace CodeShareBackend.Services
                     CodeSnippets = u.CodeSnippets.Select(cs => new
                     {
                         cs.UniqueId,
-                        Code = cs.Code.Length > 20 ? cs.Code.Substring(0, 20) : cs.Code
+                        Code = cs.Code.Length > 40 ? cs.Code.Substring(0, 40) : cs.Code
                     }).ToArray()
                 })
                 .FirstOrDefaultAsync();

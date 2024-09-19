@@ -4,12 +4,9 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using System.Diagnostics;
 
-namespace CodeShareBackend.Data
-{
-    public class ApplicationDbContext : IdentityDbContext<UserCodeShare>
-    {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
+namespace CodeShareBackend.Data {
+    public class ApplicationDbContext : IdentityDbContext<UserCodeShare> {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) {
 
         }
 
@@ -22,8 +19,7 @@ namespace CodeShareBackend.Data
         //    optionsBuilder.LogTo(message => Debug.WriteLine(message));
         //}
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
+        protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<UserCodeShare>()
@@ -32,8 +28,7 @@ namespace CodeShareBackend.Data
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<CodeSnippet>(builder =>
-            {
+            modelBuilder.Entity<CodeSnippet>(builder => {
                 builder
                 .HasKey(p => p.Id);
 
@@ -47,12 +42,11 @@ namespace CodeShareBackend.Data
                 .Property(c => c.SelectedLangId)
                 .HasDefaultValue(1);
 
-                builder.Property(p => p.ExpiryDate)
-                .HasDefaultValue(DateTime.Now.AddDays(3));
+                //current date plus 7 days
+                builder.Property(p => p.ExpiryDate).HasDefaultValueSql("dateadd(day, 7, getdate())");
             });
 
-            modelBuilder.Entity<ProgLanguage>(builder =>
-            {
+            modelBuilder.Entity<ProgLanguage>(builder => {
                 builder
                 .HasKey(p => p.Id);
 
