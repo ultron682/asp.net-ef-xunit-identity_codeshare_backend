@@ -7,7 +7,7 @@ namespace CodeShareBackend.IServices
     {
         Task<IdentityResult> ConfirmEmailAsync(string userId, string token);
         Task<bool> DeleteSnippetAsync(string uniqueId, string userId);
-        Task<string> GenerateJwtToken(UserCodeShare user);
+        string GenerateJwtToken(UserCodeShare user);
         Task<object> GetAccountInfoAsync(string userId);
         Task<List<CodeSnippet>> GetSnippetsByUserIdAsync(string userId);
         Task<UserCodeShare?> GetUserByEmailAsync(string email);

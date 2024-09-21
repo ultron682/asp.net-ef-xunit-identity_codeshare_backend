@@ -42,10 +42,10 @@ namespace CodeShareBackend.Services
             return await _userManager.FindByEmailAsync(email);
         }
 
-        public async Task<string> GenerateJwtToken(UserCodeShare user)
+        public string GenerateJwtToken(UserCodeShare user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var token = JwtTokenGenerator.GenerateToken(user.Email, user.UserName, key, _configuration["Jwt:Issuer"], _configuration["Jwt:Audience"]);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            var token = JwtTokenGenerator.GenerateToken(user.Email!, user.UserName!, key, _configuration["Jwt:Issuer"]!, _configuration["Jwt:Audience"]!);
             return token;
         }
 
@@ -86,12 +86,12 @@ namespace CodeShareBackend.Services
                     CodeSnippets = u.CodeSnippets.Select(cs => new
                     {
                         cs.UniqueId,
-                        Code = cs.Code.Length > 40 ? cs.Code.Substring(0, 40) : cs.Code
+                        Code = cs.Code!.Length > 40 ? cs.Code.Substring(0, 40) : cs.Code
                     }).ToArray()
                 })
                 .FirstOrDefaultAsync();
 
-            return accountInfo;
+            return accountInfo!;
         }
 
         public async Task<List<CodeSnippet>> GetSnippetsByUserIdAsync(string userId)

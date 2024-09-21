@@ -19,7 +19,7 @@ namespace CodeShareBackend.Services
             {
                 if (Mail_Settings.UserName == string.Empty)
                 {
-                    Console.WriteLine("Mail Settings not found in appsettings.json");
+                    Console.WriteLine("Sending emails disabled due to Mail Settings not found in appsettings.json");
                     return false;
                 }
 
