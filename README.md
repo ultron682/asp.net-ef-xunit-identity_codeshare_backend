@@ -26,27 +26,27 @@ CodeShareBackend is a backend application developed using ASP.NET Core that supp
 ### 3. Collaborative Code Editing with SignalR (Real-time Updates)
 CodeShareHub is a SignalR Hub that allows users to collaboratively edit and update code snippets in real-time. It provides the following features:
 
--Join Code Snippet Room: Users can join a unique document editing session, represented by a code snippet's unique identifier.
--Real-time Code Updates: Users can collaboratively edit a code snippet in real-time, with changes immediately reflected to other users in the session.
--Document Management: Supports multiple users editing the same code snippet while ensuring only authorized users can make changes.
--Snippet Property Changes: Owners of a snippet can update properties like the selected programming language or set the snippet as read-only.
--Connection Management: Manages user connections and group memberships to keep track of which users are editing which documents.
+- Join Code Snippet Room: Users can join a unique document editing session, represented by a code snippet's unique identifier.
+- Real-time Code Updates: Users can collaboratively edit a code snippet in real-time, with changes immediately reflected to other users in the session.
+- Document Management: Supports multiple users editing the same code snippet while ensuring only authorized users can make changes.
+- Snippet Property Changes: Owners of a snippet can update properties like the selected programming language or set the snippet as read-only.
+- Connection Management: Manages user connections and group memberships to keep track of which users are editing which documents.
 
 ### 4. Account Management
 - Account Information: Retrieve user profile details such as email and username.
 - Update Username: Users can update their display name (nickname).
+#### Email-Based Operations:
 - Send a confirmation email after registration.
 - Handle email confirmation links for account verification.
 
 ### 5. Email Service Integration
 - The backend uses MailKit for sending emails.
-- It handles operations like sending account verification emails and user notifications.
+- It handles operations like sending account verification emails.
 - Configurable SMTP settings through appsettings.json.
 
 ### 6. Security
 - JWT Authentication: Securely manages user sessions with token-based authentication.
 - Password Hashing: Protects user credentials using Identity framework.
-- SSL Support: Ensures secure communication between the backend and external services.
 
 
 ## Technologies Used:
@@ -57,6 +57,8 @@ CodeShareHub is a SignalR Hub that allows users to collaboratively edit and upda
 - MailKit: For sending emails (e.g., confirmation emails).
 
 - Microsoft Identity: For user authentication, password management, and security.
+
+- SignalR: For real-time communication between clients for collaborative code editing.
 
 - JWT (JSON Web Tokens): For user authentication and authorization.
 
@@ -82,15 +84,20 @@ CodeShareHub is a SignalR Hub that allows users to collaboratively edit and upda
 - PATCH /account/nickname: Update user's nickname.
 
 ### Code Snippet Management:
-
 - POST /snippet: Create a new code snippet.
 
 - DELETE /snippet/{UniqueId}: Delete a snippet by unique ID.
 
 - GET /snippet: Get all code snippets for the authenticated user.
 
-Email Verification:
+### Real-time Collaboration with SignalR (CodeShareHub):
+- JoinToDocument: Join a real-time code editing session for a specific snippet.
 
+- PushUpdate: Send real-time code changes to other connected users.
+
+- ChangeCodeSnippetProperty: Update code snippet properties such as programming language or read-only status.
+
+### Email Verification:
 - POST /account/send-confirmation-email: Sends an email confirmation link.
 
 - GET /account/confirm: Confirms user email using a token.
