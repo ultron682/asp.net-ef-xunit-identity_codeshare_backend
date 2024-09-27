@@ -9,6 +9,16 @@ A quick look at the functionalities:
 # CodeShareBackend
 CodeShareBackend is a backend application developed using ASP.NET Core that supports user authentication, code snippet sharing, collaborative code editing, and account management functionalities. It provides a RESTful API for managing user accounts, code snippets, and handles email-based operations like user registration, login, and email confirmation.
 
+## Technologies:
+- **ASP.NET Core 8 Web API:** Core framework for building RESTful services.
+- **Entity Framework Core:** For interacting with the database and managing entities.
+- **MailKit:** For sending emails (e.g., confirmation emails).
+- **Microsoft Identity:** For user authentication, password management, and security.
+- **SignalR:** For real-time communication between clients for collaborative code editing.
+- **JWT (JSON Web Tokens):** For user authentication and authorization.
+- **Swagger:** API documentation and testing interface.
+
+
 ## Features
 
 ### 1. User Authentication and Authorization
@@ -47,22 +57,6 @@ CodeShareHub is a SignalR Hub that allows users to collaboratively edit and upda
 ### 6. Security
 - JWT Authentication: Securely manages user sessions with token-based authentication.
 - Password Hashing: Protects user credentials using Identity framework.
-
-
-## Technologies Used:
-- ASP.NET Core Web API: Core framework for building RESTful services.
-
-- Entity Framework Core: For interacting with the database and managing entities.
-
-- MailKit: For sending emails (e.g., confirmation emails).
-
-- Microsoft Identity: For user authentication, password management, and security.
-
-- SignalR: For real-time communication between clients for collaborative code editing.
-
-- JWT (JSON Web Tokens): For user authentication and authorization.
-
-- Swagger: API documentation and testing interface.
 
 ## Models
 - UserCodeShare: Inherits from IdentityUser, stores user-specific data.
