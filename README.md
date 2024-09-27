@@ -65,6 +65,10 @@ CodeShareHub is a SignalR Hub that allows users to collaboratively edit and upda
 - MailData: Stores email information for sending emails via MailKit.
 - MailSettings: Holds the SMTP server settings.
 
+## Unit and Integration Tests
+The CodeShareBackend includes unit tests to ensure the correct functionality of key components, particularly the AccountController. The tests are written using XUnit and Moq for mocking dependencies.
+
+
 ## API Endpoints
 
 ### Authentication and User Management:
