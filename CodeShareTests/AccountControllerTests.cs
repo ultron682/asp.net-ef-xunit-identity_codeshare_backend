@@ -51,12 +51,11 @@ namespace CodeShareTests {
             Assert.Equal("User registered successfully", okResult.Value);
         }
 
-
-
         public async Task Register_WithValidModel_ReturnsOk() {
             // Arrange
             var registerRequest = new RegisterRequestCodeShare { Email = "test2@example.com", UserName = "test2", Password = "Password123." };
             var resultSuccess = new IdentityResult();
+            
             _mockAccountService.Setup(s => s.RegisterUser(It.IsAny<RegisterRequestCodeShare>()))
                 .ReturnsAsync(resultSuccess);
             _mockAccountService.Setup(s => s.GetUserByEmailAsync(It.IsAny<string>()))
@@ -72,14 +71,6 @@ namespace CodeShareTests {
             Assert.Equal("User registered successfully", okResult.Value);
         }
 
-
-
-
-
-
-
-
-
         [Fact]
         public async Task Register_WithInvalidModel_ReturnsBadRequest() {
             // Arrange
@@ -92,28 +83,6 @@ namespace CodeShareTests {
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(400, badRequestResult.StatusCode);
         }
-
-        //[Fact]
-        //public async Task Login_WithValidCredentials_ReturnsOkWithToken() {
-        //    // Arrange
-        //    var loginRequest = new LoginRequestCodeShare { Email = "test@example.com", Password = "password123" };
-        //    var user = new UserCodeShare { Email = "test@example.com", EmailConfirmed = true };
-
-        //    _mockAccountService.Setup(s => s.GetUserByEmailAsync(loginRequest.Email))
-        //        .ReturnsAsync(user);
-        //    _mockAccountService.Setup(s => s.LoginUser(user, loginRequest.Password))
-        //        .ReturnsAsync(true);
-        //    _mockAccountService.Setup(s => s.GenerateJwtToken(user))
-        //        .Returns("fake-jwt-token");
-
-        //    // Act
-        //    var result = await _controller.Login(loginRequest);
-
-        //    // Assert
-        //    var okResult = Assert.IsType<OkObjectResult>(result);
-        //    var tokenResponse = Assert.IsType<dynamic>(okResult.Value);
-        //    Assert.Equal("fake-jwt-token", tokenResponse.accessToken);
-        //}
 
         [Fact]
         public async Task Login_WithUnconfirmedEmail_ReturnsStatusCode470() {
