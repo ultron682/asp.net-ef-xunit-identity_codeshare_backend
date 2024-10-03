@@ -64,7 +64,7 @@ namespace CodeShareBackend.Controllers
                 }
 
                 var loginResult = await _accountService.LoginUser(user, model.Password);
-                if (loginResult != null)
+                if (loginResult != null && loginResult.Succeeded)
                 {
                     var token = _accountService.GenerateJwtToken(user);
                     return Ok(new { accessToken = token });
